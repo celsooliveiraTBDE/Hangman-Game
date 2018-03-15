@@ -14,26 +14,24 @@
             <nav>Optional</nav>
         
         <div class="jumbotron" >
-                <h1 class="display-1 mt-5 text-light text-right">Hangman Game</h1>
-                <p class="lead p-5 text-light text-right"><u> Press Any Key to Get Started</u></p>
+                <h1 class="display-1 mt-5">Hangman Game</h1>
+                <p class="lead p-5 text-right"><u> Guess Your Favorite Booze</u></p>
         </div>
 
         <div class="row" id="1st-row"> 
                 <div class="col md-6">
                     <p id="totalWins" >Wins: </p>
-                    <p id="totalGuesses">Number of Guesses Remaining: </p>
+                    <p id="chancesLeft">Number of Guesses Remaining: </p>
                 </div>    
                 
                 <div class="col md-6">
-                    <h2 id="chosenWord">Word: MADONNA _ _ _ _ _ _ <h2>
+                    <h2 id="chosenWord">_ _ _ _ _ _ <h2>
                     <p id="guessedLetters">Letters Already Guessed: (L Z Y H).</p>
-                    <p id="chancesLeft">Letters Already Guessed: (L Z Y H).</p>
 
                 </div>
         
         </div>
         <script type="text/javascript">
-            // Lists all possible values the CPU can choose from;
                 const maxTries = 8; 
                 var chancesLeft = 0; 
                 //total number of tries based on a stick figure hangman
@@ -41,56 +39,52 @@
                 //Number of wins racked up
                 var wordsArray=["beer","gin", "vodka", "whiskey", "wine"]; 
                 //  Words Array   
-                var guessedLetters=[]; //letters guessed
-                var chosenWord = wordsArray[Math.floor(Math.random() * wordsArray.length)];
-                // Select a random index from an array and stored it in the CPU Choice
-                var guessingWord = [];
+                var guessedLetters=[]; 
+                //letters guessed
+                // Game State variables
                 var gameStarted = false;
-                var gameFinished = false; 
-                //Additional variables declared to reset the game
+                var gameFinished = false;
                 
-                // Reset our game-level variables
-                function resetGame() {
+                //Additional variables to randomize, mask and store the chosen word
+                var chosenWordIndex = 0;
+                var guessingWord = [];
+                var chosenWord; 
+                
+                //Initializes the game
+                function beginGame() {
                     chancesLeft = maxTries;
-                    gameStarted = false;
+                    gameStarted = true;
                     // Randonly selects a word from our array
                     chosenWordIndex = Math.floor(Math.random() * (wordsArray.length));
-
+                    chosenWord = wordsArray[chosenWordIndex];
                     // Clear out arrays
                     guessedLetters = [];
                     guessingWord = [];
-
                     // Build the guessing word and clear it out
-                    for (var i = 0; i < guessingWord.length; i++) {
+                    for (var i = 0; i < chosenWord.length; i++) {
                      guessingWord[i] = "_";
                     }
-                    var chancesLeft = guessingWord.length; 
                 }
-                resetGame();
-                console.log(chancesLeft);                   
-
+                beginGame();
                     // Show display
-                    updateDisplay();
+                updateDisplay();
 
                 function updateDisplay() {
-
-                    document.getElementById("totalWins").innerText = totalWins;
-                    document.getElementById("chosenWord").innerText = "";
-                    for (var i = 0; i < guessingWord.length; i++) {
-                        document.getElementById("chosenWord").innerText += guessingWord[i];
-                    }
-                    document.getElementById("chancesLeft").innerText = chancesLeft;
-                    document.getElementById("guessedLetters").innerText = guessedLetters;
+                    //rewrites to the HTML page
+                    document.getElementById("totalWins").innerText = "Total Wins: "+totalWins;
+                    document.getElementById("chosenWord").innerText = "What's on the Menu: "+guessingWord;
+                    document.getElementById("chancesLeft").innerText = "Chances Left: "+chancesLeft;
+                    document.getElementById("guessedLetters").innerText = "Letters Picked: "+guessedLetters;
+                    // Checks for the end of the game
                     if(chancesLeft <= 0) {
-                        // document.getElementById("gameover-image").style.cssText = "display: block";
-                        // document.getElementById("pressKeyTryAgain").style.cssText = "display:block";
-                        hasFinished = true;
-                    }
+                        // Display some sort of game over message; 
+                        gameFinished = true;  }
                 };
+
                 document.onkeydown = function(event) {
                     // If we finished a game, dump one keystroke and reset.
                     if(gameFinished) {
-                        resetGame();
+                        beginGame();
                         gameFinished = false;
                     } else {
                         // Check to make sure a-z was pressed.
@@ -99,45 +93,49 @@
                         }
                     }
                 }
-// This function takes a letter and finds all instances of 
-// appearance in the string and replaces them in the guess word.
-// This function takes a letter and finds all instances of 
-// appearance in the string and replaces them in the guess word.
-            function makeGuess(letter) {
-            console.log(chancesLeft)
-                    if (guessedLetters.indexOf(letter) === -1) {
-                        guessedLetters.push(letter);
-                        evaluateGuess(letter);
-                    }
-            };
-            function evaluateGuess(letter) {
-                // Array to store positions of letters in string
+                // This function takes a letter and finds all instances of 
+                // appearance in the string and replaces them in the guess word.
+                function makeGuess(letter) {
+                        if (guessedLetters.indexOf(letter) === -1) {//this avoids duplicate strokes
+                           guessedLetters.push(letter); 
+                            evaluateGuess(letter);
+                            
+                        }
+                    };
+                function evaluateGuess(letter) {
+        // Array to store positions of letters in string
                 var positions = [];
 
-    // Loop through word finding all instances of guessed letter, store the indicies in an array.
-                for (var i = 0; i < wordsArray[currentWordIndex].length; i++) {
-                    if(wordsArray[currentWordIndex][i] === letter) {
-                        positions.push(i);
+    // Loop through word finding all instances of guessed letter, store them in the answer array.
+                for (var i = 0; i < chosenWord.length; i++) {
+                    if(chosenWord.charAt(i) === letter) {
+                        positions.push(letter);
+                        guessingWord[i] = letter
+
                     }
                 }
+                updateDisplay(); 
+                    checkWin(); 
 
-                // if there are no indicies, remove a guess and update the hangman image
                 if (positions.length <= 0) {
                     chancesLeft--;
-                    console.log(chancesLeft)
-                } else {
+                    updateDisplay(); 
+                }
                     // Loop through all the indicies and replace the '_' with a letter.
                     for(var i = 0; i < positions.length; i++) {
+                        console.log("inside for loop");
                         guessingWord[positions[i]] = letter;
+                        console.log("Guessing Word"+guessingWord);
                     }
                 }
-            };
+            
                 function checkWin() {
                     if(guessingWord.indexOf("_") === -1) {
                         // document.getElementById("youwin-image").style.cssText = "display: block";
                         // document.getElementById("pressKeyTryAgain").style.cssText= "display: block";
                         totalWins++;
-                        hasFinished = true;
+                        GameFinished = true;
+                        beginGame(); 
                     }
 };
         </script>
